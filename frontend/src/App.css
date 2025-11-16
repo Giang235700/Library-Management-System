@@ -26,7 +26,8 @@ button {
    right: 16px;
    bottom: 16px;
    border-radius: 24px;
-   background: linear-gradient(135deg, #f5ebe0 0%, #e0d4c2 40%, #d1c8b4 100%);
+   background: linear-gradient(135deg, rgba(155, 146, 42, 1) 0%, rgba(164, 116, 73, 1) 100%, rgba(147, 153, 148, 1) 100%, rgba(176, 176, 174, 1) 100%);
+   border-bottom: 1px solid rgba(148, 163, 184, 0.35);
    box-shadow: 6px 6px 20px rgba(15, 23, 42, 0.2);
    display: flex;
    flex-direction: column;
@@ -40,9 +41,8 @@ header {
    padding: 0 24px;
    height: 68px;
    color: #1f2933;
-   background: linear-gradient(90deg,
-         rgba(243, 234, 214, 0.92),
-         rgba(243, 234, 214, 0.85));
+   background: #9b922a;
+   background: linear-gradient(135deg, rgba(155, 146, 42, 1) 0%, rgba(164, 116, 73, 1) 100%, rgba(147, 153, 148, 1) 100%, rgba(176, 176, 174, 1) 100%);
    border-bottom: 1px solid rgba(148, 163, 184, 0.35);
 }
 
@@ -121,7 +121,7 @@ header {
    justify-content: center;
    gap: 6px;
    text-decoration: none;
-   color: rgb(35, 34, 34);
+   color: rgb(255, 255, 255);
    padding: 12px 0;
    transition: background 0.3s;
 }
@@ -144,7 +144,7 @@ header {
 }
 
 .sidebar li a:hover .icon {
-   background-color: rgba(139, 139, 139, 0.3);
+   background-color: rgba(198, 198, 198, 0.3);
    transform: scale(1.05);
 }
 
@@ -160,8 +160,8 @@ header {
 
 
 .sidebar li a.active .icon  {
-   color: wheat;
-   background-color: #1f2933 ;
+   color: rgb(98, 77, 38);
+   background-color: #ffffff ;
 }
 
 
@@ -444,4 +444,422 @@ header {
 .top-cards label{
    font-size: 12px;
    font-weight: 600;
+}
+.dashboard-page {
+  min-height: 100vh;
+  width: 100%;
+  background: url("/library1.png") center/cover no-repeat fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #f6f8ff;
+  font-family: Poppins, sans-serif;
+}
+
+.dashboard-container {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  padding: 30px 36px;
+  border-radius: 20px;
+  width: min(90vw, 480px);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  text-align: left;
+}
+
+.dashboard-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.info-box {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.info-box h3 {
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.info-box p {
+  margin: 6px 0;
+  font-size: 15px;
+  color: #e9ecff;
+}
+
+.error {
+  color: #ffdddd;
+  font-size: 18px;
+  font-weight: 600;
+}
+.admin-container {
+  padding: 16px;
+  background-color: white;
+}
+
+.admin-title {
+  margin-bottom: 12px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.admin-topbar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.admin-search {
+  padding: 8px 12px;
+  border-radius: 18px;
+  border: 1px solid #ccc;
+  min-width: 200px;
+}
+
+.admin-add-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-add-form input {
+  padding: 6px 10px;
+  border-radius: 18px;
+  border: 1px solid #ccc;
+}
+
+.admin-btn-add {
+  padding: 7px 14px;
+  border-radius: 18px;
+  border: none;
+  background: #4b5563;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.admin-btn-delete {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: #dc2626;
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-error {
+  color: red;
+  margin-bottom: 10px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid #ddd;
+}
+
+.admin-table tr:hover {
+  background: #f5f5f5;
+}
+
+.mainContainer {
+  padding: 16px;
+  background-color: white;
+}
+/* Khung chứa bảng, là nơi scroll */
+.admin-table-wrapper {
+  max-height: 400px;      /* chỉnh theo ý m, ví dụ 300–500px */
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Ẩn scrollbar nếu m không thích thấy nó (tuỳ chọn) */
+.admin-table-wrapper {
+  scrollbar-width: none;            /* Firefox */
+}
+
+.admin-table-wrapper::-webkit-scrollbar {
+  display: none;                    /* Chrome / Edge */
+}
+
+/* Bảng */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+/* Header dính trên cùng */
+.admin-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: #f9fafb;   /* để che phần body trượt bên dưới */
+}
+
+/* Style cell chung */
+.admin-table th,
+.admin-table td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* --- Tinh chỉnh topbar cho trang User --- */
+
+.admin-users-topbar {
+  align-items: center;
+}
+
+.admin-users-topbar .admin-add-form {
+  flex: 1;
+}
+
+/* Form tạo/sửa user: input + select giống BrowseBooks */
+
+.admin-add-form select {
+  padding: 6px 10px;
+  border-radius: 18px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  font-size: 0.9rem;
+}
+
+/* Nút hủy khi đang edit */
+
+.admin-btn-cancel {
+  padding: 7px 14px;
+  border-radius: 18px;
+  border: none;
+  background: #e5e7eb;
+  color: #374151;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* --- Nhóm nút Actions trong bảng user --- */
+
+.admin-user-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Nút nhỏ trong bảng */
+
+.admin-btn-small {
+  border-radius: 999px;
+  border: none;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-weight: 500;
+  background: #e5e7eb;
+  color: #111827;
+}
+
+/* Màu cảnh báo & xóa giống theme */
+
+.admin-btn-small.admin-btn-warning {
+  background: #facc15;
+  color: #1f2937;
+}
+
+.admin-btn-small.admin-btn-danger {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.4);
+}
+
+.modal h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Reuse form-group & form-actions cho modal */
+.modal .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.modal .form-group input {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+}
+
+.modal .form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+/* Topbar riêng cho trang User Management */
+.admin-users-topbar {
+  display: flex;
+  flex-direction: column;   /* search trên, form dưới */
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.modal button{
+   border-radius: 18px;
+   padding: 5px 15px;
+   background-color: rgb(40, 40, 232);
+   color: white;
+   font-weight: 550;
+   border: none;
+}
+
+.modal .btn-secondary{
+   background-color: rgb(168, 53, 53);
+}
+.form-group input{
+   margin-top: 10px;
+   margin-bottom: 10px;
+}
+/* Ô search 1 mình 1 dòng, rộng vừa */
+.admin-users-topbar .admin-search {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Form Add User: 1 dòng ngang đầy đủ */
+.admin-users-topbar .admin-add-form {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 0.9fr 0.9fr 0.9fr auto auto;
+  /*  Full name | Email | Phone | Password | Role | Add | Cancel  */
+  gap: 8px;
+  align-items: center;
+}
+
+/* Input + select trong form Add User */
+.admin-users-topbar .admin-add-form input,
+.admin-users-topbar .admin-add-form select {
+  padding: 6px 10px;
+  border-radius: 18px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Nút Cancel khi edit */
+.admin-btn-cancel {
+  padding: 7px 14px;
+  border-radius: 18px;
+  border: none;
+  background: #e5e7eb;
+  color: #374151;
+  cursor: pointer;
+  font-weight: 500;
+}
+.admin-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  overflow-x: auto;   /* nếu bảng rộng hơn thì cho scroll ngang nhẹ */
+  overflow-y: visible;
+  box-sizing: border-box;
+}
+
+/* Bảng giống BrowseBooks */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-table thead th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #f3f4f6;
+}
+
+/* Nhóm nút Actions đẹp hơn tí */
+.admin-user-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.admin-btn-small {
+  border-radius: 999px;
+  border: none;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-weight: 500;
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.admin-btn-small.admin-btn-warning {
+  background: #facc15;
+  color: #1f2937;
+}
+
+.admin-btn-small.admin-btn-danger {
+  background: #ef4444;
+  color: #ffffff;
+}
+.highlight-id {
+  font-weight: 700;
+  color: #b45309; /* màu vàng đậm */
 }

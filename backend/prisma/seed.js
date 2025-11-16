@@ -1,280 +1,230 @@
-import pkg from "@prisma/client";
+import { PrismaClient, Role, Gender } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const { PrismaClient, Role, BorrowStatus, CopyStatus } = pkg;
 const prisma = new PrismaClient();
+const PASSWORD = "123456";
+const HASH = bcrypt.hashSync(PASSWORD, 10);
+
+function rand(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function randomDate(start, end) {
+  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+}
 
 async function main() {
-  console.log("🚀 Seeding Library DB...");
-  const hashedAdminPass = bcrypt.hashSync("admin123", 10);
-  const staffPass = bcrypt.hashSync("123456", 10);
+  console.log("=== RESET DATABASE ===");
 
-  await prisma.user.upsert({
-    where: { email: "admin@library.vn" },
-    update: {},
-    create: {
-      name: "Admin",
-      email: "admin@library.vn",
-      passwordHash: hashedAdminPass,
-      role: Role.ADMIN,
-      phone: "0000000000",
-    },
-  });
+  await prisma.fine.deleteMany();
+  await prisma.reservation.deleteMany();
+  await prisma.borrowing.deleteMany();
+  await prisma.bookCopy.deleteMany();
+  await prisma.book.deleteMany();
+  await prisma.readerProfile.deleteMany();
+  await prisma.user.deleteMany();
 
-  const librarian = await prisma.user.upsert({
-    where: { email: "lib@library.vn" },
-    update: {},
-    create: {
-      name: "Thu thu",
-      email: "lib@library.vn",
-      passwordHash: staffPass,
-      role: Role.LIBRARIAN,
-      phone: "0900000001",
-    },
-  });
+  console.log("=== SEED USERS ===");
 
-  await prisma.user.upsert({
-    where: { email: "acc@library.vn" },
-    update: {},
-    create: {
-      name: "Ke toan",
-      email: "acc@library.vn",
-      passwordHash: staffPass,
-      role: Role.ACCOUNTANT,
-      phone: "0900000002",
-    },
-  });
-
-  console.log("✅ Staff created");
-
-  const booksData = [
-    {
-      title: "Clean Code",
-      author: "Robert C. Martin",
-      genre: "Lap trinh",
-      publishedYear: 2008,
-      language: "English",
-      description: "A Handbook of Agile Software Craftsmanship",
-      location: "A1-01",
-      copies: 5,
-    },
-    {
-      title: "Design Patterns",
-      author: "GoF",
-      genre: "Lap trinh",
-      publishedYear: 1994,
-      language: "English",
-      description: "Elements of Reusable Object-Oriented Software",
-      location: "A1-02",
-      copies: 3,
-    },
-    {
-      title: "Introduction to Algorithms",
-      author: "CLRS",
-      genre: "Thuat toan",
-      publishedYear: 2009,
-      language: "English",
-      description: "CLRS classic",
-      location: "A1-03",
-      copies: 4,
-    },
-  ];
-
-  const books = [];
-  for (const b of booksData) {
-    const bk = await prisma.book.upsert({
-      where: {
-        title_author_publishedYear: {
-          title: b.title,
-          author: b.author,
-          publishedYear: b.publishedYear,
-        },
-      },
-      update: {
-        genre: b.genre,
-        language: b.language,
-        description: b.description,
-        location: b.location,
-      },
-      create: {
-        title: b.title,
-        author: b.author,
-        genre: b.genre,
-        language: b.language,
-        publishedYear: b.publishedYear,
-        description: b.description ?? null,
-        location: b.location,
-      },
-    });
-    books.push(bk);
-    const existingCount = await prisma.bookCopy.count({
-      where: { bookId: bk.id },
-    });
-    const need = Math.max(0, b.copies - existingCount);
-    for (let i = 0; i < need; i++) {
-      await prisma.bookCopy.create({
+  // ---- ADMIN ----
+  const admins = await Promise.all(
+    Array.from({ length: 3 }).map((_, i) =>
+      prisma.user.create({
         data: {
-          bookId: bk.id,
-          status: CopyStatus.AVAILABLE,
+          name: `Admin ${i + 1}`,
+          email: `admin_seed_${i + 1}@lib.com`,
+          passwordHash: HASH,
+          role: Role.ADMIN,
+          phone: `09010000${i + 1}`,
+        },
+      })
+    )
+  );
+
+  // ---- LIBRARIANS ----
+  const librarians = await Promise.all(
+    Array.from({ length: 3 }).map((_, i) =>
+      prisma.user.create({
+        data: {
+          name: `Librarian ${i + 1}`,
+          email: `librarian_seed_${i + 1}@lib.com`,
+          passwordHash: HASH,
+          role: Role.LIBRARIAN,
+          phone: `09020000${i + 1}`,
+        },
+      })
+    )
+  );
+
+  // ---- ACCOUNTANTS ----
+  const accountants = await Promise.all(
+    Array.from({ length: 2 }).map((_, i) =>
+      prisma.user.create({
+        data: {
+          name: `Accountant ${i + 1}`,
+          email: `accountant_seed_${i + 1}@lib.com`,
+          passwordHash: HASH,
+          role: Role.ACCOUNTANT,
+          phone: `09030000${i + 1}`,
+        },
+      })
+    )
+  );
+
+  // ---- READERS ----
+  const readers = await Promise.all(
+    Array.from({ length: 40 }).map((_, i) =>
+      prisma.user.create({
+        data: {
+          name: `Reader ${i + 1}`,
+          email: `reader_seed_${i + 1}@mail.com`,
+          passwordHash: HASH,
+          role: Role.READER,
+          phone: `09040000${i + 1}`,
+          readerProfile: {
+            create: {
+              address: `Street ${i + 1}`,
+              gender: rand([Gender.MALE, Gender.FEMALE, Gender.OTHER]),
+              dob: randomDate(new Date(1995, 0, 1), new Date(2010, 0, 1)),
+            },
+          },
+        },
+        include: { readerProfile: true },
+      })
+    )
+  );
+
+  console.log("Users inserted:", {
+    admins: admins.length,
+    librarians: librarians.length,
+    accountants: accountants.length,
+    readers: readers.length,
+  });
+
+  // ---- BOOKS ----
+  console.log("=== SEED BOOKS ===");
+  const genres = ["Fantasy", "SciFi", "Romance", "Tech", "History", "Education"];
+
+  const books = await Promise.all(
+    Array.from({ length: 40 }).map((_, i) =>
+      prisma.book.create({
+        data: {
+          title: `Book Seed ${i + 1}`,
+          author: `Author ${i + 1}`,
+          genre: rand(genres),
+          language: "English",
+          publishedYear: 1990 + (i % 25),
+          description: `Seed description for book ${i + 1}`,
+          location: `Shelf-${Math.ceil((i + 1) / 5)}`,
+        },
+      })
+    )
+  );
+
+  console.log(`Books inserted: ${books.length}`);
+
+  // ---- COPIES ----
+  console.log("=== SEED BOOK COPIES ===");
+  const copies = [];
+  for (const book of books) {
+    for (let i = 0; i < 5; i++) {
+      const copy = await prisma.bookCopy.create({
+        data: {
+          bookId: book.id,
+          status: rand([0, 0, 0, 2, 3]), // mostly available
         },
       });
+      copies.push(copy);
     }
   }
 
-  console.log("✅ Books & copies created");
+  console.log(`Copies inserted: ${copies.length}`);
 
-  const readersData = [
-    {
-      name: "Nguyen Van A",
-      address: "Ha Noi",
-      phone: "0912345678",
-      email: "a@library.vn",
-      password: "123456",
-    },
-    {
-      name: "Tran Thi B",
-      address: "Ha Noi",
-      phone: "0987654321",
-      email: "b@library.vn",
-      password: "123456",
-    },
-    {
-      name: "Le Van C",
-      address: "Da Nang",
-      phone: "0909090909",
-      email: "c@library.vn",
-      password: "123456",
-    },
-  ];
+  // ---- BORROWINGS ----
+  console.log("=== SEED BORROWINGS ===");
+  const borrowings = [];
+  for (let i = 0; i < 100; i++) {
+    const user = rand(readers);
+    const profile = user.readerProfile;
+    const copy = rand(copies);
+    const staff = rand(librarians);
 
-  const readers = [];
-  for (const r of readersData) {
-    const user = await prisma.user.upsert({
-      where: { email: r.email },
-      update: {
-        name: r.name,
-        phone: r.phone,
-      },
-      create: {
-        name: r.name,
-        email: r.email,
-        passwordHash: bcrypt.hashSync(r.password, 10),
-        role: Role.READER,
-        phone: r.phone,
-      },
-    });
+    const borrowDate = randomDate(new Date(2024, 0, 1), new Date());
+    const dueDate = new Date(borrowDate);
+    dueDate.setDate(dueDate.getDate() + rand([7, 14, 21]));
 
-    const profile = await prisma.readerProfile.upsert({
-      where: { userId: user.id },
-      update: { address: r.address },
-      create: { userId: user.id, address: r.address },
-    });
+    const returned = Math.random() < 0.6;
 
-    readers.push({ user, profile });
-  }
-
-  console.log("✅ Readers created");
-  const now = new Date();
-  const daysFromNow = (d) => {
-    const t = new Date(now);
-    t.setDate(t.getDate() + d);
-    return t;
-  };
-
-  async function pickAvailableCopyId(bookId) {
-    const copy = await prisma.bookCopy.findFirst({
-      where: { bookId, status: CopyStatus.AVAILABLE },
-      orderBy: { id: "asc" },
-    });
-    return copy?.id ?? null;
-  }
-
-  const br1CopyId = await pickAvailableCopyId(books[0].id); 
-  const br2CopyId = await pickAvailableCopyId(books[1].id); 
-  const br3CopyId = await pickAvailableCopyId(books[2].id); 
-
-
-  const borrowingsToCreate = [
-    {
-      copyId: br1CopyId,
-      readerId: readers[0].profile.id,
-      staffId: librarian?.id ?? null,
-      borrowDate: daysFromNow(-2),
-      dueDate: daysFromNow(12),
-      returnDate: null,
-      status: BorrowStatus.BORROWED,
-      bookId: books[0].id, 
-    },
-    {
-      copyId: br2CopyId,
-      readerId: readers[1].profile.id,
-      staffId: librarian?.id ?? null,
-      borrowDate: daysFromNow(-20),
-      dueDate: daysFromNow(-10),
-      returnDate: daysFromNow(-11),
-      status: BorrowStatus.RETURNED,
-      bookId: books[1].id,
-    },
-    {
-      copyId: br3CopyId,
-      readerId: readers[2].profile.id,
-      staffId: librarian?.id ?? null,
-      borrowDate: daysFromNow(-15),
-      dueDate: daysFromNow(-7),
-      returnDate: daysFromNow(-5),
-      status: BorrowStatus.RETURNED,
-      bookId: books[2].id,
-    },
-  ].filter((x) => x.copyId); 
-
-  const createdBorrowings = [];
-  for (const br of borrowingsToCreate) {
-    if (br.status === BorrowStatus.BORROWED) {
-      await prisma.bookCopy.update({
-        where: { id: br.copyId },
-        data: { status: CopyStatus.BORROWED },
-      });
-    } else {
-      await prisma.bookCopy.update({
-        where: { id: br.copyId },
-        data: { status: CopyStatus.AVAILABLE },
-      });
-    }
-
-    const created = await prisma.borrowing.create({ data: br });
-    createdBorrowings.push(created);
-  }
-
-  console.log("✅ Borrowings created");
-
-  const late = createdBorrowings.find(
-    (b) => b.returnDate && new Date(b.returnDate) > new Date(b.dueDate)
-  );
-  if (late) {
-    const daysLate = Math.ceil(
-      (new Date(late.returnDate) - new Date(late.dueDate)) / (1000 * 60 * 60 * 24)
-    );
-    const amount = String(daysLate * 5000); 
-    await prisma.fine.create({
+    const b = await prisma.borrowing.create({
       data: {
-        borrowingId: late.id,
-        reason: `Tra tre ${daysLate} ngay`,
-        amount,
-        fineDate: new Date(),
-        paidAt: null,
+        readerId: profile.id,
+        copyId: copy.id,
+        staffId: staff.id,
+        borrowDate,
+        dueDate,
+        returnDate: returned ? randomDate(borrowDate, new Date()) : null,
+        status: returned ? 2 : 1,
+        bookId: copy.bookId,
       },
     });
-    console.log(`✅ Fine created for late return: ${daysLate} day(s)`);
-  } else {
-    console.log("ℹ️ No late return found for fine.");
+
+    borrowings.push(b);
   }
 
-  console.log("🎉 Seeding done.");
+  console.log(`Borrowings inserted: ${borrowings.length}`);
+
+  // ---- RESERVATIONS ----
+  console.log("=== SEED RESERVATIONS ===");
+  const reservations = [];
+  for (let i = 0; i < 40; i++) {
+    const user = rand(readers);
+    const profile = user.readerProfile;
+    const book = rand(books);
+
+    const r = await prisma.reservation.create({
+      data: {
+        readerId: profile.id,
+        bookId: book.id,
+        status: rand([1, 1, 4, 5]),
+        reservedAt: randomDate(new Date(2024, 0, 1), new Date()),
+      },
+    });
+
+    reservations.push(r);
+  }
+
+  console.log(`Reservations inserted: ${reservations.length}`);
+
+  // ---- FINES ----
+  console.log("=== SEED FINES ===");
+  const fineAmounts = [5000, 10000, 15000, 20000, 30000];
+
+  let fineCount = 0;
+  for (const b of borrowings) {
+    if (Math.random() < 0.4) {
+      await prisma.fine.create({
+        data: {
+          borrowingId: b.id,
+          reason: rand(["Late return", "Lost book", "Damaged book"]),
+          amount: rand(fineAmounts),
+          fineDate: randomDate(b.borrowDate, new Date()),
+        },
+      });
+      fineCount++;
+    }
+  }
+
+  console.log(`Fines inserted: ${fineCount}`);
+
+  console.log("=== SEED DONE ===");
+  console.log("Example login accounts:");
+  console.log("  admin_seed_1@lib.com / 123456");
+  console.log("  reader_seed_1@mail.com / 123456");
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
+  .catch((err) => {
+    console.error("Seed error:", err);
     process.exit(1);
   })
   .finally(async () => {

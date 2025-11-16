@@ -1,217 +1,82 @@
-import Header from "../../components/Header.jsx";
-import SideBar from "../../components/SideBar.jsx";
-import { FaHome, FaUserFriends, FaMoneyBillWave, FaWallet } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import api from "../../lib/axios";
+import useAuthStore from "../../store/useAuthStore.js";
 
-import { Bar, Doughnut } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from "chart.js";
+export default function ReaderDashboard() {
+  const token = useAuthStore((state) => state.token);
 
-ChartJS.register(
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+  const [profile, setProfile] = useState(null);
+  const [error, setError] = useState("");
 
-export default function Dashboard() {
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-
-  // Lượt mượn theo tháng (sample)
-  const borrowsPerMonth = [120, 95, 140, 180, 160, 175, 210, 220, 190, 205, 230, 250];
-
-  // Tình trạng sách
-  const inventoryStatus = {
-    labels: ["Còn trong kho", "Đang mượn", "Mất / hỏng"],
-    datasets: [
-      {
-        data: [3200, 680, 45],
-        backgroundColor: [
-          "rgba(16, 185, 129, 0.9)", // green
-          "rgba(59, 130, 246, 0.9)", // blue
-          "rgba(239, 68, 68, 0.9)", // red
-        ],
-        hoverBackgroundColor: [
-          "rgba(16, 185, 129, 1)",
-          "rgba(59, 130, 246, 1)",
-          "rgba(239, 68, 68, 1)",
-        ],
-        borderWidth: 0,
-      },
-    ],
-  };
-
-  const borrowChartData = {
-    labels: months,
-    datasets: [
-      {
-        type: "bar",
-        label: "Lượt mượn",
-        data: borrowsPerMonth,
-        backgroundColor: "rgba(56, 189, 248, 0.9)", // cyan
-        barThickness: 18,
-        maxBarThickness: 22,
-        borderRadius: 8,
-      },
-    ],
-  };
-
-  const borrowChartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top",
-        align: "center",
-        labels: { boxWidth: 12, padding: 16 },
-      },
-      title: { display: false },
-      tooltip: { mode: "index", intersect: false },
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: {
-        beginAtZero: true,
-        title: { display: true, text: "Lượt mượn" },
-        grid: { color: "rgba(148, 163, 184, 0.35)" },
-      },
-    },
-    onHover: (event, chartElement) => {
-      if (event?.native?.target) {
-        event.native.target.style.cursor =
-          chartElement.length > 0 ? "pointer" : "default";
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get("/dashboard/reader-overview", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProfile(res.data);
+      } catch (error) {
+        setError("Failed to load profile", error);
       }
-    },
-  };
+    };
 
-  const doughnutOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-    },
-  };
+    if (token) {
+      fetchProfile();
+    } else {
+      setError("No token found. Please log in again.");
+    }
+  }, [token]);
+
+  if (error) {
+    return (
+      <div className="dashboard-page">
+        <p className="error">{error}</p>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="dashboard-page">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  const rp = profile.readerProfile;
 
   return (
-    <div className="appMain">
-      <Header />
-      <div className="mainContentWrapper">
-        <SideBar />
-        <div className="mainContent">
-          <div className="dashboard">
-            {/* === Top cards === */}
-            <div className="top-cards">
-              <div className="card card1">
-                <div className="card-content">
-                  <h4>Tổng số đầu sách</h4>
-                  <p className="value">3,520</p>
-                </div>
-                <div className="icon-container">
-                  <FaHome />
-                </div>
-              </div>
+    <div className="dashboard-page">
+      <div className="dashboard-container">
+        <h2>Welcome, {profile.name}</h2>
 
-              <div className="card card2">
-                <div className="card-content">
-                  <h4>Tổng số độc giả</h4>
-                  <p className="value">1,248</p>
-                </div>
-                <div className="icon-container">
-                  <FaUserFriends />
-                </div>
-              </div>
-
-              <div className="card card3">
-                <div className="card-content">
-                  <h4>Sách đang mượn</h4>
-                  <p className="value">680</p>
-                </div>
-                <div className="icon-container">
-                  <FaMoneyBillWave />
-                </div>
-              </div>
-
-              <div className="card card4">
-                <div className="card-content">
-                  <h4>Doanh thu tháng</h4>
-                  <p className="value">12.400.000 VND</p>
-                </div>
-                <div className="icon-container">
-                  <FaWallet />
-                </div>
-              </div>
-            </div>
-
-            {/* === Charts === */}
-            <div className="charts">
-              {/* Bar chart: Lượt mượn */}
-              <div className="chart-left">
-                <div className="chart-header">
-                  <h3>Lượt mượn theo tháng</h3>
-                </div>
-                <div className="chart-container chart-center">
-                  <Bar data={borrowChartData} options={borrowChartOptions} />
-                </div>
-              </div>
-
-              {/* Doughnut: Tình trạng sách */}
-              <div className="chart-right">
-                <h3 style={{ textAlign: "center", marginBottom: "18px" }}>
-                  Thống kê thư viện
-                </h3>
-
-                <div className="circle-wrapper">
-                  <Doughnut
-                    data={inventoryStatus}
-                    options={doughnutOptions}
-                    width={180}
-                    height={180}
-                    responsive={false}
-                  />
-                </div>
-
-                <ul className="legend-list">
-                  <li>
-                    <span className="legend-dot legend-available" />
-                    Còn trong kho: <strong>3.200</strong> cuốn
-                  </li>
-                  <li>
-                    <span className="legend-dot legend-borrowed" />
-                    Đang mượn: <strong>680</strong> cuốn
-                  </li>
-                  <li>
-                    <span className="legend-dot legend-lost" />
-                    Mất / hỏng: <strong>45</strong> cuốn
-                  </li>
-                </ul>
-              </div>
-            </div>
-            {/* === End Charts === */}
-          </div>
+        <div className="info-box">
+          <h3>Your Information</h3>
+          <p>
+            <strong>Name:</strong> {profile.name}
+          </p>
+          <p>
+            <strong>Email:</strong> {profile.email}
+          </p>
+          <p>
+            <strong>Role:</strong> {profile.role}
+          </p>
+          <p>
+            <strong>Phone:</strong> {profile.phone || "N/A"}
+          </p>
+          <p>
+            <strong>Address:</strong> {rp?.address || "N/A"}
+          </p>
+          <p>
+            <strong>Gender:</strong> {rp?.gender || "N/A"}
+          </p>
+          <p>
+            <strong>Date of birth:</strong> {rp?.dob?.slice(0, 10) || "N/A"}
+          </p>
+          <p>
+            <strong>Registered on:</strong>{" "}
+            {rp?.registrationDate?.slice(0, 10) || "N/A"}
+          </p>
         </div>
       </div>
     </div>

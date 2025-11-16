@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import api from "../lib/axios";
 import { FaEnvelope, FaLock, FaSpinner } from "react-icons/fa";
 import "./Login_Register.css";
-import useAuthStore from "../store/authStore.js";  
+import useAuthStore from "../store/useAuthStore.js";
 
 export default function Login() {
   const { register, handleSubmit } = useForm();
@@ -18,6 +18,7 @@ export default function Login() {
   const onSubmit = async (data) => {
     setError("");
     setLoading(true);
+
     try {
       const submitData = {
         ...data,
@@ -29,6 +30,7 @@ export default function Login() {
       const token = res.data.token;
 
       localStorage.setItem("token", token);
+
       loginStore({
         token,
         user: {
@@ -38,9 +40,17 @@ export default function Login() {
         },
       });
 
-      navigate("/dashboard");
+      const roleRoutes = {
+        READER: "/reader/dashboard",
+        LIBRARIAN: "/librarian/dashboard",
+        ADMIN: "/admin/dashboard",
+        ACCOUNTANT: "/accountant/dashboard",
+      };
+
+      const userRole = res.data.role;
+      navigate(roleRoutes[userRole] || "/login");
     } catch (error) {
-      setError(error.response?.data?.message || "Dang nhap that bai");
+      setError(error.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -49,7 +59,7 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-container">
-        <h2>Please Login</h2>
+        <h2>Welcome Back</h2>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="input-group">
@@ -60,11 +70,12 @@ export default function Login() {
               {...register("email", { required: true })}
             />
           </div>
+
           <div className="input-group">
             <FaLock />
             <input
               type="password"
-              placeholder="Mat khau"
+              placeholder="Password"
               {...register("password", { required: true })}
             />
           </div>
@@ -72,10 +83,10 @@ export default function Login() {
           <button type="submit" disabled={loading}>
             {loading ? (
               <>
-                <FaSpinner className="spin" /> Dang dang nhap...
+                <FaSpinner className="spin" /> Logging in...
               </>
             ) : (
-              "Dang nhap"
+              "Log In"
             )}
           </button>
         </form>
@@ -83,7 +94,7 @@ export default function Login() {
         {error && <p className="error">{error}</p>}
 
         <p>
-          Chua co tai khoan? <Link to="/register">Dang ky ngay</Link>
+          Don't have an account? <Link to="/register">Register now</Link>
         </p>
       </div>
     </div>

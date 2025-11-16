@@ -9,6 +9,7 @@ import {
   FaPhone,
   FaMapMarkerAlt,
   FaSpinner,
+  FaVenusMars,
 } from "react-icons/fa";
 import "./Login_Register.css";
 
@@ -25,13 +26,16 @@ export default function Register() {
       const submitData = {
         ...data,
         email: data.email.trim().toLowerCase(),
+        dob: data.dob ? new Date(data.dob) : null
       };
+
       await api.post("/auth/register", submitData);
-      alert("Dang ky thanh cong! Hay dang nhap.");
+
+      alert("Registration successful! Please log in.");
       reset();
       navigate("/login");
-    } catch (err) {
-      setError(err.response?.data?.message || "Dang ky that bai");
+    } catch (error) {
+      setError(error.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -40,45 +44,75 @@ export default function Register() {
   return (
     <div className="auth-page">
       <div className="auth-container">
-        <h2>Tao tai khoan doc gia</h2>
+        <h2>Create Reader Account</h2>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="input-group">
             <FaUser />
-            <input placeholder="Ho ten" {...register("name", { required: true })} />
+            <input
+              placeholder="Full name"
+              {...register("name", { required: true })}
+            />
           </div>
 
           <div className="input-group">
             <FaEnvelope />
-            <input type="email" placeholder="Email" {...register("email", { required: true })} />
+            <input
+              type="email"
+              placeholder="Email"
+              {...register("email", { required: true })}
+            />
           </div>
 
           <div className="input-group">
             <FaLock />
             <input
               type="password"
-              placeholder="Mat khau"
+              placeholder="Password"
               {...register("password", { required: true, minLength: 6 })}
             />
           </div>
 
           <div className="input-group">
             <FaPhone />
-            <input placeholder="So dien thoai" {...register("phone")} />
+            <input placeholder="Phone number" {...register("phone")} />
+          </div>
+
+          <div className="two-fields">
+            <div className="input-group">
+              <FaVenusMars />
+              <select {...register("gender", { required: true })}>
+                <option value="">Gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+
+            <div className="input-group">
+              <input
+                type="date"
+                {...register("dob")}
+              />
+            </div>
+
           </div>
 
           <div className="input-group">
             <FaMapMarkerAlt />
-            <input placeholder="Dia chi" {...register("address")} />
+            <input
+              placeholder="Address"
+              {...register("address", { required: true })}
+            />
           </div>
 
           <button type="submit" disabled={loading}>
             {loading ? (
               <>
-                <FaSpinner className="spin" /> Dang dang ky...
+                <FaSpinner className="spin" /> Registering...
               </>
             ) : (
-              "Dang ky"
+              "Register"
             )}
           </button>
         </form>
@@ -86,7 +120,7 @@ export default function Register() {
         {error && <p className="error">{error}</p>}
 
         <p>
-          Da co tai khoan? <Link to="/login">Dang nhap</Link>
+          Already have an account? <Link to="/login">Login</Link>
         </p>
       </div>
     </div>

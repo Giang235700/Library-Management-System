@@ -7,16 +7,30 @@ import prisma from "../prismaClient.js";
 const router = express.Router();
 
 router.post("/register", async (req, res) => {
-  const { name, address, phone, email, password } = req.body;
+  const { name, address, phone, email, password, gender, dob } = req.body;
 
   try {
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Thieu thong tin" });
+    if (!name || !email || !password || !address || !gender) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const validGender = ["MALE", "FEMALE", "OTHER"];
+    if (!validGender.includes(gender)) {
+      return res.status(400).json({ message: "Invalid gender" });
+    }
+
+    let parsedDob = null;
+    if (dob) {
+      const d = new Date(dob);
+      if (isNaN(d.getTime())) {
+        return res.status(400).json({ message: "Invalid date format" });
+      }
+      parsedDob = d;
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      return res.status(400).json({ message: "Email da ton tai" });
+      return res.status(400).json({ message: "Email already exists" });
     }
 
     const hashed = bcrypt.hashSync(password, 10);
@@ -30,19 +44,27 @@ router.post("/register", async (req, res) => {
         phone: phone ?? null,
         readerProfile: {
           create: {
-            address: address ?? "",
-          }
-        }
+            address,
+            gender,
+            dob: parsedDob
+          },
+        },
       },
       include: { readerProfile: true },
     });
 
     if (!process.env.JWT_SECRET) {
       return res.status(201).json({
-        message: "Dang ky thanh cong",
-        user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role },
+        message: "Register success",
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+        },
       });
     }
+
     const token = jwt.sign(
       { id: newUser.id, role: newUser.role },
       process.env.JWT_SECRET,
@@ -50,35 +72,42 @@ router.post("/register", async (req, res) => {
     );
 
     return res.status(201).json({
-      message: "Dang ky doc gia thanh cong",
+      message: "Register success",
       token,
-      user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role },
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      },
     });
   } catch (error) {
-    console.error("Loi dang ky:", error);
-    return res.status(503).json({ message: "Loi server" });
+    console.error("Register error:", error);
+    return res.status(503).json({ message: "Server error" });
   }
 });
 
 router.post("/login", async (req, res) => {
+   console.log("🔥 HIT POST /api/auth/login", req.body);
   const { email, password } = req.body;
 
   try {
     if (!email || !password) {
-      return res.status(400).json({ message: "Thieu email hoac password" });
+      return res.status(400).json({ message: "Missing email or password" });
     }
+
     const user = await prisma.user.findFirst({ where: { email } });
     if (!user) {
-      return res.status(404).json({ message: "User khong ton tai" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const ok = bcrypt.compareSync(password, user.passwordHash);
     if (!ok) {
-      return res.status(401).json({ message: "Sai mat khau" });
+      return res.status(401).json({ message: "Wrong password" });
     }
 
     if (!process.env.JWT_SECRET) {
-      return res.status(500).json({ message: "JWT_SECRET chua duoc cau hinh" });
+      return res.status(500).json({ message: "JWT_SECRET missing" });
     }
 
     const token = jwt.sign(
@@ -94,8 +123,8 @@ router.post("/login", async (req, res) => {
       email: user.email,
     });
   } catch (error) {
-    console.error("Loi dang nhap:", error);
-    return res.status(503).json({ message: "Loi server" });
+    console.error("Login error:", error);
+    return res.status(503).json({ message: "Server error" });
   }
 });
 

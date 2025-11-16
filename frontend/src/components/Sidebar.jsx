@@ -9,7 +9,7 @@ import {
   FaChartBar,
   FaUserCog
 } from "react-icons/fa";
-import authStore from "../store/authStore";
+import authStore from "../store/useAuthStore";
 
 export default function SideBar() {
   const location = useLocation();
