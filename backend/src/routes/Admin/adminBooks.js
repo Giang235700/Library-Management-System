@@ -50,19 +50,36 @@ router.post("/books", async (req, res) => {
 
     const result = await prisma.$transaction(async (tx) => {
       const insertedBooks = await tx.$queryRaw`
-        INSERT INTO "Book"
-          ("title", "author", "genre", "language", "publishedYear", "description", "location")
-        VALUES
-          (${title}, ${author}, ${category}, ${"English"}, ${2020}, ${""}, ${"Shelf-A"})
-        RETURNING *
-      `;
+          INSERT INTO "Book"
+            ("title", "author", "genre", "language", "publishedYear", "description", "location", "createdAt", "updatedAt")
+          VALUES
+            (
+              ${title},
+              ${author},
+              ${category},
+              ${"English"},
+              ${2020},
+              ${""},
+              ${"Shelf-A"},
+              NOW(),
+              NOW()
+            )
+          RETURNING *
+        `;
+
       const newBook = insertedBooks[0];
 
+
       await tx.$executeRaw`
-        INSERT INTO "BookCopy" ("bookId", "status")
-        SELECT ${newBook.id}, 0
+        INSERT INTO "BookCopy" ("bookId", "status", "createdAt", "updatedAt")
+        SELECT 
+          ${newBook.id} AS "bookId",
+          0             AS "status",
+          NOW()         AS "createdAt",
+          NOW()         AS "updatedAt"
         FROM generate_series(1, ${total})
       `;
+
 
       const copies = await tx.$queryRaw`
         SELECT id, status

@@ -23,7 +23,7 @@ router.get("/users", async (req, res) => {
         "createdAt",
         "updatedAt"
       FROM "User"
-      WHERE role <> 'ADMIN'
+      WHERE role <> 'ADMIN'::"Role"
       ORDER BY "createdAt" DESC
     `;
 
@@ -85,11 +85,20 @@ router.post("/users", async (req, res) => {
     try {
       const insertedRows = await prisma.$queryRaw`
         INSERT INTO "User"
-          (name, email, "passwordHash", role, phone)
+          (name, email, "passwordHash", role, phone, "createdAt", "updatedAt")
         VALUES
-          (${name}, ${normalizedEmail}, ${passwordHash}, ${role}, ${phone})
+          (
+            ${name},
+            ${normalizedEmail},
+            ${passwordHash},
+            ${role}::"Role",
+            ${phone},
+            NOW(),          -- createdAt
+            NOW()           -- updatedAt
+          )
         RETURNING id, email, name, role, phone, "createdAt", "updatedAt"
       `;
+
       const user = insertedRows[0];
 
       res.status(201).json(user);
@@ -144,7 +153,7 @@ router.put("/users/:id", async (req, res) => {
           message: "Invalid role. Allowed: LIBRARIAN, ACCOUNTANT, READER",
         });
       }
-      updates.push(`role = $${updates.length + 1}`);
+      updates.push(`role = $${updates.length + 1}::"Role"`);
       params.push(role);
     }
 

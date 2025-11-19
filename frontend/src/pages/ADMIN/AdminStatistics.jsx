@@ -199,10 +199,10 @@ export default function AdminStatistics() {
           <div className="admin-stats-grid">
             {/* --- BAR CHART --- */}
             <section className="admin-stats-card admin-stats-card-large">
-              <header className="admin-stats-card-header">
+              <div className="admin-stats-card-header">
                 <h3>New readers per month</h3>
                 <span className="admin-stats-tag">Year {year}</span>
-              </header>
+              </div>
               <div className="admin-stats-chart-wrapper">
                 {borrowingCounts.length > 0 ? (
                   <Bar
@@ -219,10 +219,10 @@ export default function AdminStatistics() {
 
             {/* --- DOUGHNUT CHART --- */}
             <section className="admin-stats-card admin-stats-card-medium">
-              <header className="admin-stats-card-header">
+              <div className="admin-stats-card-header">
                 <h3>Books by genre</h3>
                 <span className="admin-stats-tag">Current catalog</span>
-              </header>
+              </div>
               <div className="admin-stats-chart-wrapper admin-stats-chart-center">
                 {genreCounts.length > 0 ? (
                   <Doughnut
@@ -237,10 +237,10 @@ export default function AdminStatistics() {
 
             {/* --- MOST BORROWED --- */}
             <section className="admin-stats-card admin-stats-card-full">
-              <header className="admin-stats-card-header">
+              <div className="admin-stats-card-header">
                 <h3>Most borrowed books</h3>
                 <span className="admin-stats-tag">Top titles</span>
-              </header>
+              </div>
 
               <div className="admin-stats-table-wrapper">
                 <table className="admin-stats-table">

@@ -12,7 +12,7 @@ export default function AdminUsers() {
 
   const [search, setSearch] = useState("");
 
-  const [formMode, setFormMode] = useState("create"); // "create" | "edit"
+  const [formMode, setFormMode] = useState("create");
   const [selectedUserId, setSelectedUserId] = useState(null);
 
   const [formData, setFormData] = useState({

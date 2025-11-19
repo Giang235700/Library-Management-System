@@ -9,7 +9,6 @@ router.get("/dashboard", async (req, res) => {
     const now = new Date();
     const year = now.getFullYear();
     const startOfYear = new Date(year, 0, 1);
-    const startOfMonth = new Date(year, now.getMonth(), 1);
 
     // 1. Tổng số đầu sách
     const totalBookTitlesRows =
@@ -94,7 +93,7 @@ router.get("/dashboard", async (req, res) => {
       (await prisma.$queryRaw`
         SELECT COALESCE(SUM(amount), 0) AS total
         FROM "Fine"
-        WHERE "fineDate" >= ${startOfMonth}
+        WHERE "fineDate" >= ${startOfYear}
           AND "fineDate" <= ${now}
       `) || [];
     const monthlyBorrowFeeRevenue = Number(fineAggRows[0]?.total ?? 0);
